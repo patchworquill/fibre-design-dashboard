@@ -54,9 +54,16 @@ def massAdd(stringlist, error_list):
   return length, error_list
 
 # List 18mm
+#TODO: Common Error -- an SB is mistakenly described as an 18mm conduit. This should report to the user that the Table must be fixed.
+## Knowns: The Number should not be of the form 5XX-X
+
 line_18s = df[df['SIZE/TYPE'].str.contains('18mm')]
 line_18s.dropna(axis=0, subset="ACTIVITY #")
 line_18 = line_18s.LENGTH.values
+
+for line_length in line_18:
+  if type(line_length) :
+    print(line_length)
 
 lines_18_length, errors = massAdd(line_18, errors)
 
