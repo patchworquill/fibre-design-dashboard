@@ -40,4 +40,5 @@ if __name__ == '__main__':
         t.populate(100, random_branches=True)
                    
     # TreeWidget seems to fail with simple quotes
-    # print(str(get_json(t)).replace("'", '"
+    # print(str(get_json(t)).replace("'", '"'))
+    

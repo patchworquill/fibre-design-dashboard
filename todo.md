@@ -10,3 +10,7 @@
   - + Conduit Offset
   - + Conduit Lengths
 
+---
+
+- Draw NetworkX in Cytoscape with proper locations from Rhino Points!
+- Draw a NetworkX graph in Cytoscape
