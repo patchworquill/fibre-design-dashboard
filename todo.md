@@ -29,9 +29,9 @@
     - INFO: After a node is selected in the graph, the nodes can no longer be entirely removed. The previous node is added as a callback to the function. 
   - [ ] Edge Data Table
 - [x] Layout improvement
+  - [ ] Fix Table overflow issue
 
-
-- All On in Datasheet
+- [x] All On in Datasheet
 - TODO: What is wrong with the NODE vs ID labels?
 
 - Import functions from tree_cable_allocation
@@ -49,19 +49,20 @@
   - Phase PRE, CMR, DFD, OFC, OFX
   - File connected to:
 
-- Figure out how to:
-  - Change the class of a button / indicator based on conditions
+- [x] Figure out how to:
+  - [x] Change the class of a button / indicator based on conditions
     - Have a standard function wrapper / decorator that changes it based on codes:
       - RED Error / Exception
       - GREEN Expected Type
       - WARNING Value Errors (bad data or uncaught exceptions to the formulas)
+  - [ ] Write the success/fail decorator
 
 - DRC Python app has callbacks from 
   - [x] Radio -> Dropdown (set/filter list of options)
   - Dropdown -> Numeric / Text Display
   - Dropdown -> Graphs (one callback per graph object)
 
-- Display the allocated fibre beside the fibre capacity on graph, with Dead denoted and range info on hover
+- [ ] Display the allocated fibre beside the fibre capacity on graph, with Dead denoted and range info on hover
 - Range info display
   - SB Y-axis
   - Drop range X-axis

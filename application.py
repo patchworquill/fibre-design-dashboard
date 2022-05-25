@@ -79,7 +79,7 @@ fig.update_layout(barmode='stack', title='Fiber Allocation')
 # Capacity Plot
 fig2 = go.Figure(data=[
     go.Bar(
-        name="Capacity", x=edges_df["End"], y=edges_df["Cap"]),  # marker_color=colors['Live']
+        name="Capacity", x=edges_df["End"], y=edges_df["Cap"], marker_color="lightgrey"),  # marker_color=colors['Live']
 ])
 fig2.update_layout(barmode='stack', title='Fiber Capacity')
 
@@ -131,11 +131,28 @@ app.layout = dbc.Container([
         ]),
         dbc.Col([
             html.H4("Ⓣ NODES"),
-            html.H2(str(len(NODES_LIST)), id="node_count")
+            html.H2(html.Span(
+                str(len(NODES_LIST)),
+                id="tooltip-target",
+                style={"cursor": "pointer"}, #"textDecoration": "underline"
+            )),
+            dbc.Tooltip(
+                str(NODES_LIST),
+                target="tooltip-target",
+            ),
         ]),
         dbc.Col([
             html.H4("Ⓣ EDGES"),
-            html.H2(str(nx.number_of_edges(G))) # TODO: root this tree... These stats are wrong. ETE3 has a good system but NetworkX seems fine too.
+            # html.H2(str(nx.number_of_edges(G))),
+            html.H2(html.Span(
+                str(nx.number_of_edges(G)),
+                id="tooltip-target2",
+                style={"cursor": "pointer"}, #"textDecoration": "underline"
+            )),
+            dbc.Tooltip(
+                str(nx.edges(G)),
+                target="tooltip-target2",
+            ),
         ]),
         dbc.Col([
             html.H4("Ⓣ LIVE"),
@@ -147,7 +164,11 @@ app.layout = dbc.Container([
         ]),
         dbc.Col([
             html.H4("DEGREE"),
-            html.H5("MAX \t\t\t"+str(len(nx.degree_histogram(G))-1)),
+            html.H5(html.Span("MAX"+str(len(nx.degree_histogram(G))-1), id="tooltip-target3")),
+            dbc.Tooltip(
+                str(nx.degree(G)),
+                target="tooltip-target3",
+            ),
             # html.H5("MIN \t\t\t"+str(nx.degree(G)))
              ## Histogram prints the count at each value for degree (lowest being 1)
         ]),
@@ -162,7 +183,8 @@ app.layout = dbc.Container([
             html.H2("CIVIL METERS")
         ]),
     ],
-    id="info-text"
+    id="info-text",
+    style={"height": "10vh"}
     ),
 
     #############
@@ -236,7 +258,7 @@ app.layout = dbc.Container([
                     dbc.Row([
                             # text_color="primary", "secondary", "success", "warning", "danger", "info", "dark", "black", "muted"
                             dbc.Badge('4', pill=True, id="fcp-badge",
-                                      color="success", className="ms-1"),
+                                      color="muted", className="ms-1"),
                             ]),
                 ],
                 width=2,
@@ -245,7 +267,7 @@ app.layout = dbc.Container([
                     dbc.Row([
                         # text_color="primary", "secondary", "success", "warning", "danger", "info", "dark", "black", "muted"
                         dbc.Badge('4', pill=True, id="range-badge",
-                                  color="success", className="ms-1"),
+                                  color="muted", className="ms-1"),
                     ]),
                 ],
                 width=2,
@@ -254,7 +276,7 @@ app.layout = dbc.Container([
                     dbc.Row([
                         # text_color="primary", "secondary", "success", "warning", "danger", "info", "dark", "black", "muted"
                         dbc.Badge('4', pill=True, id="activity-badge",
-                                  color="success", className="ms-1"),
+                                  color="muted", className="ms-1"),
                     ]),
                 ],
                 width=2,
@@ -295,17 +317,22 @@ app.layout = dbc.Container([
                         dash_table.DataTable(
                             id='memory-table',
                             columns=[{'name': i, 'id': i}
-                                     for i in nodes_df.columns]
+                                     for i in nodes_df.columns],
+                            style_table={
+                                'overflowY': 'scroll',
+                                'overflowX': 'scroll'
+                                }
                         ),
-                    ])
+                    ],
+                    
+                    )
                 ],
                 ),
-            ]),
-            dbc.Row([
-                
             ],
+            className="row h-50",
             ),
         ],
+        style={"height": "60vh"}
         ),
     ],),
     dbc.Row([
@@ -323,7 +350,7 @@ app.layout = dbc.Container([
         ]),
     ],
         id="bar-div",
-        className='four columns'
+        style={"height": "30vh"}
     ),
 
     html.Div([
@@ -334,8 +361,9 @@ app.layout = dbc.Container([
 
 ],
     id='mainContainer',
-    style={"display": "flex", "flex-direction": "column", "width": "100%"},
+    style={"display": "flex", "flex-direction": "column", "width": "100%", "height": "100vh"},
     fluid=True,
+    
 )
 
 #################################################
@@ -446,35 +474,40 @@ def update_layout(mouse_on_node, mouse_on_edge, tap_edge, tap_node, snd):
 
 @app.callback(
     Output("range-badge", "children"),
+    Output("range-badge", "color"),
     Input("range-button", "n_clicks")
 )
 def on_button_click(n):
     if n is None:
-        return "Not clicked."
+        return "Not clicked.", "secondary"
     else:
-        return f"Clicked {n} times."
+        return f"Clicked {n} times.", "success"
 
 
 @app.callback(
     Output("activity-badge", "children"),
+    Output("activity-badge", "color"),
     Input("activity-button", "n_clicks")
 )
 def on_button_click(n):
     if n is None:
-        return "Not clicked."
+        return "Not clicked.", "secondary"
+    elif (n%2>0):
+        return "Input Warnings", "warning"
     else:
-        return f"Clicked {n} times."
+        return f"Clicked {n} times.", "success"
 
 
 @app.callback(
     Output("fcp-badge", "children"),
+    Output("fcp-badge", "color"),
     Input("fcp-button", "n_clicks")
 )
 def on_button_click(n):
     if n is None:
-        return "Not clicked."
+        return "Not clicked.", "secondary"
     else:
-        return f"Clicked {n} times."
+        return f"Clicked {n} times.", "success"
 
 
 

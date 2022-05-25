@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"name": "afl-dash",
+			"path": "."
+		}
+	],
+	"settings": {
+		"jupyter.kernels.filter": [],
+		"workbench.colorTheme": "Quiet Light"
+	}
+}
