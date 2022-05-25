@@ -89,3 +89,4 @@ except KeyError:
     print("No node called 'FDH'")
 
 opath = path+"\Py"
+networkx.write_shp(G, opath)
