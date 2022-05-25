@@ -122,34 +122,48 @@ app.layout = dbc.Container([
             html.Div(id='output-data-upload'),
         ]),
         dbc.Col([
+            html.H4("COID"),
             html.H1("OKRG", id="project_name")
         ]),
         dbc.Col([
-            html.H1("1013B", id="fsa_name")
+            html.H4("FSA"),
+            html.H2("1013B", id="fsa_name")
         ]),
         dbc.Col([
-            html.H4("NODES"),
-            html.H4("X", id="node_count")
+            html.H4("Ⓣ NODES"),
+            html.H2(str(len(NODES_LIST)), id="node_count")
         ]),
         dbc.Col([
-            html.H4("LONGEST BRANCH")
+            html.H4("Ⓣ EDGES"),
+            html.H2(str(nx.number_of_edges(G))) # TODO: root this tree... These stats are wrong. ETE3 has a good system but NetworkX seems fine too.
         ]),
         dbc.Col([
-            html.H1("5")
+            html.H4("Ⓣ LIVE"),
+            html.H2(str(nodes_df["Live"].sum()))
         ]),
         dbc.Col([
-            html.H1("5")
+            html.H4("Ⓣ SPARE"),
+            html.H2(str(nodes_df["SPARE"].sum())) #, "SPARE2", "SPARE3"
         ]),
         dbc.Col([
-            html.H1("5")
+            html.H4("DEGREE"),
+            html.H5("MAX \t\t\t"+str(len(nx.degree_histogram(G))-1)),
+            # html.H5("MIN \t\t\t"+str(nx.degree(G)))
+             ## Histogram prints the count at each value for degree (lowest being 1)
         ]),
         dbc.Col([
-            html.H1("5")
+            html.H1("☉☉☉☉☉ 5"),
+            html.H5(str())
         ]),
         dbc.Col([
-            html.H1("5")
+            html.H1("5 ✇✇✇✇✇")
         ]),
-    ]),
+        dbc.Col([
+            html.H2("CIVIL METERS")
+        ]),
+    ],
+    id="info-text"
+    ),
 
     #############
     dbc.Row([
@@ -254,30 +268,28 @@ app.layout = dbc.Container([
                         dcc.Store(id='memory-output'),
                     ]),
                     dbc.Row([
+                        dcc.RadioItems(
+                                        id="node-selector-radio",
+                                        options=[
+                                            {"label": "All ", "value": "all"},
+                                            {"label": "SB only ", "value": "active"},
+                                            {"label": "Customize ", "value": "custom"},
+                                        ],
+                                        value="all",
+                                        labelStyle={"display": "inline-block"},
+                                        className="dcc_control",
+                                    ),
+                    ]),
+                    dbc.Row([
                         dcc.Dropdown(NODES_LIST,
                                      value=NODES_LIST,  # Initialization
                                      id='node-selector',
                                      multi=True),
                     ]),
+                    
                 ],
-                    width=3,
+                    width="100px",
                 ),
-                dbc.Col([
-                    dcc.RadioItems(
-                                    id="node-selector-radio",
-                                    options=[
-                                        {"label": "All ", "value": "all"},
-                                        {"label": "SB only ", "value": "active"},
-                                        {"label": "Customize ", "value": "custom"},
-                                    ],
-                                    value="all",
-                                    labelStyle={"display": "inline-block"},
-                                    className="dcc_control",
-                                ),
-                ],
-                ),
-            ]),
-            dbc.Row([
                 dbc.Col([
                     html.Div([
                         dash_table.DataTable(
@@ -288,6 +300,9 @@ app.layout = dbc.Container([
                     ])
                 ],
                 ),
+            ]),
+            dbc.Row([
+                
             ],
             ),
         ],
