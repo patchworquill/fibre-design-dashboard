@@ -25,7 +25,8 @@ cyto.load_extra_layouts()
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX], meta_tags=[
                 {"name": "viewport", "content": "width=device-width"}],)
 
-file = 'K:\Clients\AFL - AFL\\2021\\015 - Oakridge AB - OKRG\OKRG 1031B\DFD\(Fibre Data) OKRG 1031B.xlsx'
+# file = 'K:\Clients\AFL - AFL\\2021\\015 - Oakridge AB - OKRG\OKRG 1031B\DFD\(Fibre Data) OKRG 1031B.xlsx'
+file = './(Fibre Data) OKRG 1031B.xlsx'
 nodes_df = pd.read_excel(file, sheet_name="Node", header=0)
 
 edges_df = pd.read_excel(file, sheet_name="Wire", header=0)
@@ -48,9 +49,10 @@ cy = nx.readwrite.json_graph.cytoscape_data(G)
 # names = list(nodes_df["NODE"])
 
 # Create the Nodes List
-print(nodes_df.NODE)
+# print(nodes_df.NODE)
+NODES_LIST = list(
+    x for x in nodes_df['Struc'].unique() if pd.isnull(x) == False)
 nodes_cy = [{'data': {'id': x, 'label': x}} for x in list(nodes_df.NODE)]
-
 
 colors = {'Live': 'lightpink',
           'Spare': 'khaki',
@@ -191,7 +193,7 @@ app.layout = dbc.Container([
                 dbc.Col([
                     dbc.Row([
                         dbc.Button("Calculate FCP Number",
-                                   id='fcp-button', color="primary"),
+                                   id='fcp-button', color="muted"),
                     ]),
                 ],
                     width=2,
@@ -199,7 +201,7 @@ app.layout = dbc.Container([
                 dbc.Col([
                     dbc.Row([
                         dbc.Button("Calculate Range",
-                                   id='range-button', color="primary"),
+                                   id='range-button', color="muted"),
                     ]),
 
                 ],
@@ -252,13 +254,27 @@ app.layout = dbc.Container([
                         dcc.Store(id='memory-output'),
                     ]),
                     dbc.Row([
-                        dcc.Dropdown(nodes_df.Struc.unique(),
-                                     ['FDH'],  # Initialization
+                        dcc.Dropdown(NODES_LIST,
+                                     value=NODES_LIST,  # Initialization
                                      id='node-selector',
                                      multi=True),
                     ]),
                 ],
                     width=3,
+                ),
+                dbc.Col([
+                    dcc.RadioItems(
+                                    id="node-selector-radio",
+                                    options=[
+                                        {"label": "All ", "value": "all"},
+                                        {"label": "SB only ", "value": "active"},
+                                        {"label": "Customize ", "value": "custom"},
+                                    ],
+                                    value="all",
+                                    labelStyle={"display": "inline-block"},
+                                    className="dcc_control",
+                                ),
+                ],
                 ),
             ]),
             dbc.Row([
@@ -362,6 +378,18 @@ def update_layout(layout_value):
 
 #     return nodeList
 
+# Radio -> multi
+@app.callback(
+    Output("node-selector", "value"), [
+        Input("node-selector-radio", "value")]
+)
+def display_status(selector):
+    if selector == "all":
+        return list(NODES_LIST)
+    # elif selector == "active":
+    #     return ["AC"]
+    return []
+
 @app.callback(Output('memory-table', 'data'),
               Input('cytoscape-fsa', 'tapNodeData'),
             #   Input('cytoscape-fsa', 'selectedNodeData'),
@@ -372,7 +400,7 @@ def on_data_set_table(tapNodeData, nodeList):
         raise PreventUpdate
     else:
         data = nodes_df.at[int(tapNodeData["id"]), "Struc"]
-        print(data, type(data))
+        # print(data, type(data))
         nodeList.append(data)
 
     filtered = nodes_df[nodes_df['Struc'].isin(list(nodeList))]
@@ -442,7 +470,6 @@ def on_button_click(n):
 # )
 # def update_layout(mouse_on_node):
 #     fig.update_layout(barmode='stack', title='Fiber Allocation')
-
 def parse_contents(contents, filename, date):
     content_type, content_string = contents.split(',')
 
@@ -489,9 +516,7 @@ def parse_contents(contents, filename, date):
               State('upload-data', 'last_modified'))
 def update_output(list_of_contents, list_of_names, list_of_dates):
     if list_of_contents is not None:
-        children = [
-            parse_contents(c, n, d) for c, n, d in
-            zip(list_of_contents, list_of_names, list_of_dates)]
+        children = [parse_contents(c, n, d) for c, n, d in zip(list_of_contents, list_of_names, list_of_dates)]
         return children
 
 if __name__ == '__main__':
