@@ -17,7 +17,7 @@ import glob
 import os
 
 from tkinter.filedialog import askdirectory
-path=askdirectory()
+path=askdirectory(title="Select a directory with .csv files exported from AutoCAD tables.")
 # path = os.getcwd() # use your path
 all_files = glob.glob(path + "/*.csv")
 
@@ -60,12 +60,17 @@ def massAdd(stringlist, error_list):
 line_18s = df[df['SIZE/TYPE'].str.contains('18mm')]
 line_18s.dropna(axis=0, subset="ACTIVITY #")
 line_18 = line_18s.LENGTH.values
+line_18_multiples = line_18s["No #"].tolist()
 
-for line_length in line_18:
-  if type(line_length) :
-    print(line_length)
+# for line_length in line_18:
+#   if type(line_length) :
+#     print(line_length)
 
-lines_18_length, errors = massAdd(line_18, errors)
+# lines_18_length, errors = massAdd(line_18, errors)
+
+lines_18_length = 0
+for i in range(0,len(line_18)):
+  lines_18_length += int(str(line_18[i]).split("m")[0]) * line_18_multiples[i]
 
 print("The total length of the 18mm conduit is", lines_18_length, "m.")
 
@@ -73,14 +78,19 @@ print("The total length of the 18mm conduit is", lines_18_length, "m.")
 line_50s = df[df['SIZE/TYPE'].str.contains('50mm')]
 line_50s.dropna(axis=0, subset="ACTIVITY #")
 line_50 = line_50s.LENGTH.values
+line_50_multiples = line_50s["No #"].tolist()
 
-lines_50_length, errors = massAdd(line_50, errors)
+# lines_50_length, errors = massAdd(line_50, errors)
+
+lines_50_length = 0
+for i in range(0,len(line_50)):
+  lines_50_length += int(line_50[i].split("m")[0]) * line_50_multiples[i]
 
 print("The total length of the 50mm conduit is", lines_50_length, "m.")
 
 # For OKRG onward, activity numbers for drops use the convention 5XX-X, so we can use the '-' to count drops
-drops = df[df['ACTIVITY #'].str.contains("-", na=False)]
-print("The number of drops / flowerpots is", len(drops))
+# drops = df[df['ACTIVITY #'].str.contains("-", na=False)]
+# print("The number of drops / flowerpots is", len(drops))
 
 # For MLWD ONLY - DO NOT NEED if OKRG, ODGN, etc
 #   we search for drops by the text "BORE 18mm", and count up the "No #" column
