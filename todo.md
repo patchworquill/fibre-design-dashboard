@@ -11,6 +11,7 @@
   - + Conduit Lengths
 
 ---
+## 2022-05-24
 
 - [x] Draw NetworkX in Cytoscape 
   - [ ] Using locations info from Rhino Points!
@@ -34,9 +35,22 @@
 - [x] All On in Datasheet
 - TODO: What is wrong with the NODE vs ID labels?
 
-- Import functions from tree_cable_allocation
+
+---
+## 2022-05-25
+
+- [ ] Import functions from tree_cable_allocation
   - functionalize functions
-  - re-implement with NetworkX
+    - [x] CableActivity
+    - [x] SpliceNo
+    - [ ] FCP
+    - [ ] FibreAllocation
+    - [ ] DedicatedFibre
+      - [ ] Requires AddressCSVs from Rhino
+    - [ ] CumulativeRange
+    - [ ] DeadRange
+  - [x] re-implement with NetworkX
+    - `nx.dfs_preorder_nodes(G, source=0)`
   - calculate Cumulative and Dead Ranges (out of product_fibre_ranges [24, 48, 72, 96, 144, 288, 432])
   - calculate Capacities based on Calculated Capacity from PPC Addresses -> Live Counts
 
