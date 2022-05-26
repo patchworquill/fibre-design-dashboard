@@ -26,7 +26,7 @@
 - [x] Filtering by Node
 
 - [x] Node Data Table
-  - [ ] Fix Filtering Issue
+  - [x] Fix Filtering Issue
     - INFO: After a node is selected in the graph, the nodes can no longer be entirely removed. The previous node is added as a callback to the function. 
   - [ ] Edge Data Table
 - [x] Layout improvement

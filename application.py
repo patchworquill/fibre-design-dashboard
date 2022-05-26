@@ -28,13 +28,16 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX], meta_tags=[
 # file = 'K:\Clients\AFL - AFL\\2021\\015 - Oakridge AB - OKRG\OKRG 1031B\DFD\(Fibre Data) OKRG 1031B.xlsx'
 file = './(Fibre Data) OKRG 1031B.xlsx'
 nodes_df = pd.read_excel(file, sheet_name="Node", header=0)
+# nodes_df["SpliceNo"]    = ["XX"]*len(nodes_df) # For testing
+# nodes_df["FCP"]         = ["FCP"]*len(nodes_df) 
 edges_df = pd.read_excel(file, sheet_name="Wire", header=0)
 G = nx.from_pandas_edgelist(edges_df, "Start", "End", edge_attr=[
                             "Cap", "CableActivity"], edge_key="End")
+
 cy = nx.readwrite.json_graph.cytoscape_data(G)
 
 NODES_LIST = list(
-    x for x in nodes_df['Struc'].unique() if pd.isnull(x) == False)
+    x for x in nodes_df['NODE'].unique() if pd.isnull(x) == False)
 nodes_cy = [{'data': {'id': x, 'label': x}} for x in list(nodes_df.NODE)]
 
 # Custom Node Labelling
@@ -226,6 +229,13 @@ app.layout = dbc.Container([
                 elements={'nodes': nodes_cy, 'edges': cy['elements']['edges']},
             )
             ]),
+            dbc.Row([
+                html.Div([
+                    html.Div(id='empty-div', children='')
+                ],
+                    className='one columns'
+                ),
+            ]),
         ],
             id='cytograph',
             width=4,
@@ -318,7 +328,7 @@ app.layout = dbc.Container([
                     dbc.Row([
                         dcc.Dropdown(NODES_LIST,
                                      value=NODES_LIST,  # Initialization
-                                     id='node-selector',
+                                     id='node-selector-dropdown',
                                      multi=True, 
                                      style={
                                         "overflow-y":"auto",
@@ -333,6 +343,8 @@ app.layout = dbc.Container([
                     html.Div([
                         dash_table.DataTable(
                             id='memory-table',
+                            # sort_action='native',
+                            editable=True,
                             columns=[{'name': i, 'id': i}
                                      for i in nodes_df.columns],
                             fixed_rows={'headers': True},
@@ -375,12 +387,6 @@ app.layout = dbc.Container([
         style={"height": "30vh"}
     ),
 
-    html.Div([
-        html.Div(id='empty-div', children='')
-    ],
-        className='one columns'
-    ),
-
 ],
     id='mainContainer',
     style={"display": "flex", "flex-direction": "column", "width": "100%", "height": "100vh"},
@@ -404,20 +410,7 @@ def update_layout(layout_value):
         'animate': True
     }
 
-# # Radio -> multi
-# @app.callback(
-#     Output("node-selector", "value"), 
-        
-# )
-# def display_status(selector):
-#     if selector == "all":
-#         return list(NODES_LIST)
-#     # elif selector == "active":
-#     #     return ["AC"]
-#     return []
-
-
-@app.callback(Output('node-selector', 'value'),
+@app.callback(Output('node-selector-dropdown', 'value'),
               Input('cytoscape-fsa', 'tapNodeData'),
               Input('cytoscape-fsa', 'selectedNodeData'),
               Input("node-selector-radio", "value")
@@ -430,17 +423,20 @@ def on_graph_add_to_dropdown(tapNodeData, selectedNodeData, radioSelector):
     else:
         selected_list = []
         for node in selectedNodeData:
-            selected_list.append(nodes_df.at[int(node["id"]), "Struc"])
-        selected_list.append(nodes_df.at[int(tapNodeData["id"]), "Struc"])
-        
+            print(node)
+            selected_list = nodes_df.at[nodes_df.index[nodes_df['NODE'] == int(node["id"])], "NODE"].tolist()
+            selected_list.append() #nodes_df.at[int(node["id"]), "NODE"])
+        # selected_list.append(nodes_df.at[nodes_df.index[nodes_df['NODE'] == (int(node["id"]))], "NODE"])
+        print(selected_list)
+
     return selected_list
 
 
 @app.callback(Output('memory-table', 'data'),
-              Input('node-selector','value')  # tapNodeData
+              Input('node-selector-dropdown','value')  # tapNodeData
               )
 def on_data_set_table(nodeList):
-    filtered = nodes_df[nodes_df['Struc'].isin(list(nodeList))]
+    filtered = nodes_df[nodes_df['NODE'].isin(list(nodeList))]
 
     return filtered.to_dict('records')
 
@@ -462,8 +458,15 @@ def update_layout(mouse_on_node, mouse_on_edge, tap_edge, tap_node, snd):
     # print("------------------------------------------------------------")
     # print("All selected Nodes: {}".format(snd))
     # print("------------------------------------------------------------")
+    
+    display_string = "Select Edge: {}".format(tap_edge)
+    # display_string = str("Node id: " + tap_node["id"] 
+    #             +"\nEdge id: " + tap_edge["id"] 
+    #             + "\nCap:" + tap_edge["Cap"]
+    #             + "\nCableActivity:" + tap_edge["CableActivity"]
+    #             )
 
-    return ''  # 'see print statement for nodes and edges selected.'
+    return display_string  # 'see print statement for nodes and edges selected.'
 
 
 @app.callback(
@@ -471,55 +474,76 @@ def update_layout(mouse_on_node, mouse_on_edge, tap_edge, tap_node, snd):
     Output("cable-activity-badge", "color"),
     Output("splice-activity-badge", "children"),
     Output("splice-activity-badge", "color"),
+    Output("node-selector-radio", "value"),
+    Output("activity-button", "color"),
+    Output("fcp-button", "color"),
     Input("activity-button", "n_clicks")
 )
 def on_button_click(n):
     # clarify interface for these functions
-    cable_status, cable_list = kt.cable_activities(G, edges_df)
-    edges_df["CableActivity"] = cable_list
-    cable_list = filter(None, cable_list)
-    cable_text = str("CBL: "+max(cable_list))
-
-    splice_status, splice_list = kt.splice_activities(G, nodes_df, cable_list)
-    nodes_df["SpliceNo"] = splice_list
-    splice_list = filter(None, splice_list)
-    splice_text = str("SPLC: "+min(splice_list)+"-"+max(splice_list))
-
-    # TODO: insert these into the pandas dataframes and refresh
-    
-    if(cable_status):
-        cable_flag = "success"
-    else: 
-        cable_flag = "warning"
-
-    if (splice_status):
-        splice_flag = "success"
+    if not n:
+        cable_text = "Not clicked."
+        cable_flag = "muted"
+        splice_text = "Not clicked."
+        splice_flag = "muted"
+        button_color = "primary"
+        next_button = "muted"
     else:
-        splice_flag = "warning"
-    
-    return cable_text, cable_flag, splice_text, splice_flag
+        cable_status, cable_list = kt.cable_activities(G, edges_df)
+        edges_df["CableActivity"] = cable_list
+        cable_list = filter(None, cable_list)
+        cable_text = str("CABLE")
+
+        splice_status, splice_list = kt.splice_activities(G, nodes_df, cable_list)
+        nodes_df["SpliceNo"] = splice_list
+        splice_list = filter(None, splice_list)
+        splice_text = "SPLICE"
+
+        # TODO: insert these into the pandas dataframes and refresh
+        
+        if(cable_status):
+            cable_flag = "success"
+        else: 
+            cable_flag = "warning"
+
+        if (splice_status):
+            splice_flag = "success"
+        else:
+            splice_flag = "warning"
+
+        if (splice_status and cable_status):
+            button_color = "success"
+            next_button = "primary"
+        else:
+            button_color = "warning"
+            next_button = "muted"
+        
+    return cable_text, cable_flag, splice_text, splice_flag, "all", button_color, next_button 
 
 @app.callback(
     Output("fcp-badge", "children"),
     Output("fcp-badge", "color"),
+    Output("range-button", "color"),
+    # Output("fcp-button", "color"),
     Input("fcp-button", "n_clicks")
 )
 def on_button_click(n):
     if n is None:
-        return "Not clicked.", "secondary"
+        return "Not clicked.", "secondary", "secondary" #, "primary" 
     else:
-        return f"Clicked {n} times.", "success"
+        return f"Clicked {n} times.", "success", "primary" #,"success"
 
 @app.callback(
     Output("range-badge", "children"),
     Output("range-badge", "color"),
+    # Output("range-button", "color"),
     Input("range-button", "n_clicks")
 )
 def on_button_click(n):
     if n is None:
-        return "Not clicked.", "secondary"
+        return "Not clicked.", "secondary" #,"primary"
     else:
-        return f"Clicked {n} times.", "success"
+        return f"Clicked {n} times.", "success" #,"success"
 
 
 # TODO: Filter Barchart Graph Object to highlight current node, displaying the LIVE and SPARE count for that node.

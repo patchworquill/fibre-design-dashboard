@@ -53,10 +53,8 @@ def cable_activities(G, edges_df, act=302, capacity=432):  # nodes_df, edges_df,
     for node in list(nx.dfs_preorder_nodes(G)):
         if node in splices:
             if node == 0:
-                # print("FDH")
                 pass
             else:
-                # print("Skipping splice node:", node)
                 cable_list.append(None)
 
         else:
@@ -67,9 +65,8 @@ def cable_activities(G, edges_df, act=302, capacity=432):  # nodes_df, edges_df,
             if (capacity != prev_capacity):
                 act += 1
             cable_list.append(act)
-            # print(node.name, "Cable Activity: ", act)
-    # print("Finished Calculating Cable Activity")
 
+    print(cable_list)
     return True, cable_list
 
 def filter_max(cable_list):
@@ -77,7 +74,7 @@ def filter_max(cable_list):
 
 def splice_activities(G, nodes_df, cable_list, offset=0):
     act = filter_max(cable_list)+offset # Skip some number of ActivityCodes as a buffer
-    print("Start", act)
+    # print("Start", act)
     splice_list = [None]*len(nodes_df)
 
     splices = list({k for k, v in nx.dfs_predecessors(
@@ -88,31 +85,29 @@ def splice_activities(G, nodes_df, cable_list, offset=0):
     for node in list(nx.dfs_postorder_nodes(G)):
         # Catch null nodes
         if np.isnan(node):
-            print("Node:", node)
+            # print("Node:", node)
+            pass
         # Catch splices
         if node in splices:
             if node == 0:
-                print("FDH, skipping splice activity allocation.")
+                # print("Node:", node, " is FDH, skipping splice activity allocation.")
+                pass
             else:
-                print("Skipping splice at node:", node)
-                # splice_list.insert(None, node)
+                # print("Node:", node, "is splice, skipping splice activity allocation.")
+                pass
         else:
             check_live = nodes_df.at[nodes_df.index[nodes_df["NODE"] == node][0], "Live"]
             # If Live is INT
             if not np.isnan(check_live):
                 act += 1
-                splice_list[node]=act
                 # print("Node: ", node, "Splice Activity: ", act)
+                splice_list[nodes_df.index[nodes_df["NODE"]==node].tolist()[0]]=act
 
             # Skip if no HSDP (No Live)
             else:
-                print("Node: ", node, "has no live fibres, skipping splice activity allocation.")
-                # check_rsvd = nodes_df.at[nodes_df.index[nodes_df["NODE"] == node][0], "RSVD"].sum() + nodes_df.at[nodes_df.index[nodes_df["NODE"] == node][0], "RSVD2"]
-                # else:
-                
-                    # splice_list.insert(None, node)
+                # print("Node:", node, "has no live fibres, skipping splice activity allocation.")
+                splice_list[nodes_df.index[nodes_df["NODE"]==node].tolist()[0]]=None
     
-    # sort according to node order
     return True, splice_list
 
 
