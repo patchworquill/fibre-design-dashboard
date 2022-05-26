@@ -26,7 +26,7 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.LUX], meta_tags=[
                 {"name": "viewport", "content": "width=device-width"}],)
 
 # file = 'K:\Clients\AFL - AFL\\2021\\015 - Oakridge AB - OKRG\OKRG 1031B\DFD\(Fibre Data) OKRG 1031B.xlsx'
-file = './(Fibre Data) OKRG 1031B.xlsx'
+file = './data/(Fibre Data) OKRG 1031B.xlsx'
 nodes_df = pd.read_excel(file, sheet_name="Node", header=0)
 # nodes_df["SpliceNo"]    = ["XX"]*len(nodes_df) # For testing
 # nodes_df["FCP"]         = ["FCP"]*len(nodes_df) 
