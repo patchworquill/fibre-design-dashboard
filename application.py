@@ -120,7 +120,7 @@ app.layout = dbc.Container([
                 ),
             ]),
             ]),
-            dbc.Row([html.P(str(file), id='filename')]),
+            dbc.Row([html.P(str(file), id='filename', style={"font-size": "50%"})]),
             dbc.Row([
                 html.Div(id='output-data-upload'),
             ]),
@@ -231,7 +231,7 @@ app.layout = dbc.Container([
             ]),
             dbc.Row([
                 html.Div([
-                    html.Div(id='empty-div', children='')
+                    html.P(id='empty-div', children="", style={"font-size": "80%"})
                 ],
                     className='one columns'
                 ),

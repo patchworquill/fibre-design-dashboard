@@ -248,8 +248,6 @@ for idx, x in enumerate(res["Live"]):
       pass
 
 
-
-
 # After running this cell, I copy and pasted this into a blank text file
 # Then, I renamed the file to .csv, and imported that into a sheet in excel
 # Then, I copied the column to the NODE(T) sheet of the "flattened" fibre layout
