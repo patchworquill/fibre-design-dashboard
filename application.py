@@ -410,37 +410,6 @@ def update_layout(layout_value):
         'animate': True
     }
 
-@app.callback(Output('node-selector-dropdown', 'value'),
-              Input('cytoscape-fsa', 'tapNodeData'),
-              Input('cytoscape-fsa', 'selectedNodeData'),
-              Input("node-selector-radio", "value")
-              )
-def on_graph_add_to_dropdown(tapNodeData, selectedNodeData, radioSelector):
-    if radioSelector == "all":
-        selected_list = NODES_LIST
-    elif radioSelector == "active":
-        selected_list = []
-    else:
-        selected_list = []
-        for node in selectedNodeData:
-            print(node)
-            selected_list = nodes_df.at[nodes_df.index[nodes_df['NODE'] == int(node["id"])], "NODE"].tolist()
-            selected_list.append() #nodes_df.at[int(node["id"]), "NODE"])
-        # selected_list.append(nodes_df.at[nodes_df.index[nodes_df['NODE'] == (int(node["id"]))], "NODE"])
-        print(selected_list)
-
-    return selected_list
-
-
-@app.callback(Output('memory-table', 'data'),
-              Input('node-selector-dropdown','value')  # tapNodeData
-              )
-def on_data_set_table(nodeList):
-    filtered = nodes_df[nodes_df['NODE'].isin(list(nodeList))]
-
-    return filtered.to_dict('records')
-
-
 @app.callback(
     # Output('Live', '?'),
     Output('empty-div', 'children'),
@@ -467,7 +436,6 @@ def update_layout(mouse_on_node, mouse_on_edge, tap_edge, tap_node, snd):
     #             )
 
     return display_string  # 'see print statement for nodes and edges selected.'
-
 
 @app.callback(
     Output("cable-activity-badge", "children"),
@@ -544,6 +512,36 @@ def on_button_click(n):
         return "Not clicked.", "secondary" #,"primary"
     else:
         return f"Clicked {n} times.", "success" #,"success"
+
+@app.callback(Output('node-selector-dropdown', 'value'),
+              Input('cytoscape-fsa', 'tapNodeData'),
+              Input('cytoscape-fsa', 'selectedNodeData'),
+              Input("node-selector-radio", "value")
+              )
+def on_graph_add_to_dropdown(tapNodeData, selectedNodeData, radioSelector):
+    if radioSelector == "all":
+        selected_list = NODES_LIST
+    elif radioSelector == "active":
+        selected_list = []
+    else:
+        selected_list = []
+        for node in selectedNodeData:
+            print(node)
+            selected_list = nodes_df.at[nodes_df.index[nodes_df['NODE'] == int(node["id"])], "NODE"].tolist()
+            selected_list.append() #nodes_df.at[int(node["id"]), "NODE"])
+        # selected_list.append(nodes_df.at[nodes_df.index[nodes_df['NODE'] == (int(node["id"]))], "NODE"])
+        print(selected_list)
+
+    return selected_list
+
+
+@app.callback(Output('memory-table', 'data'),
+              Input('node-selector-dropdown','value')  # tapNodeData
+              )
+def on_data_set_table(nodeList):
+    filtered = nodes_df[nodes_df['NODE'].isin(list(nodeList))]
+
+    return filtered.to_dict('records')
 
 
 # TODO: Filter Barchart Graph Object to highlight current node, displaying the LIVE and SPARE count for that node.
