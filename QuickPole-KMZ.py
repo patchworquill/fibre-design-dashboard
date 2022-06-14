@@ -1,4 +1,4 @@
-from tkinter.filedialog import askdirectory, askopenfile
+from tkinter.filedialog import askdirectory, askopenfilename
 import os, time, pandas, shutil
 
 
@@ -69,7 +69,7 @@ for line in cfile:
 cfile.close()
 
 # Assemble kml
-cpath = askopenfile("Select the header file ('base.txt')", defaultextension=".txt")
+cpath = askopenfilename(title="Select the header file ('base.txt')", defaultextension=".txt")
 cfile = open(cpath, 'r') #K:\Personal Files\Patrick Wilkie\Design + Engineering\Python
 outfile = open(path + '/doc.kml', 'w')
 
