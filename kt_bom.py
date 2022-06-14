@@ -53,6 +53,15 @@ def massAdd(stringlist, error_list):
       length += int(stringlist[i].split("m")[0])
   return length, error_list
 
+## Drop / remove any ill-formed columns prior to tallying, but report this to the user
+nulls = df[df['SIZE/TYPE'].isnull()]
+df = df[df['SIZE/TYPE'].notna()]
+if len(nulls) > 0:
+  print("Please fix the following tables:")
+  print(nulls)
+  for i in range(0, len(nulls)):
+    errors.append(nulls.at[i, "TABLE"])
+
 # List 18mm
 #TODO: Common Error -- an SB is mistakenly described as an 18mm conduit. This should report to the user that the Table must be fixed.
 ## Knowns: The Number should not be of the form 5XX-X
@@ -70,7 +79,7 @@ line_18_multiples = line_18s["No #"].tolist()
 
 lines_18_length = 0
 for i in range(0,len(line_18)):
-  lines_18_length += int(str(line_18[i]).split("m")[0]) * line_18_multiples[i]
+  lines_18_length += int(str(line_18[i]).split("m")[0]) * int(line_18_multiples[i])
 
 print("The total length of the 18mm conduit is", lines_18_length, "m.")
 
@@ -91,6 +100,7 @@ print("The total length of the 50mm conduit is", lines_50_length, "m.")
 # For OKRG onward, activity numbers for drops use the convention 5XX-X, so we can use the '-' to count drops
 # drops = df[df['ACTIVITY #'].str.contains("-", na=False)]
 # print("The number of drops / flowerpots is", len(drops))
+
 
 # For MLWD ONLY - DO NOT NEED if OKRG, ODGN, etc
 #   we search for drops by the text "BORE 18mm", and count up the "No #" column

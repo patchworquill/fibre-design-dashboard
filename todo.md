@@ -20,7 +20,7 @@
 - [x] Layout Selector with Callback
 - [x] Proper Node and Edge Labels
   - [x] Printing to Terminal
-  - [ ] Displayed in Cytoscape
+  - [x] Displayed in Cytoscape
 - [x] Stacking Bar Graph
 - [x] Appropriate colors
 - [x] Filtering by Node

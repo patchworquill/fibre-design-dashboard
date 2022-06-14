@@ -55,8 +55,18 @@ keys = []
 
 # Calculate FibreAllocation
 for table in li:
-    minF = str(int(table["DedicatedFiber"].min()))
-    maxF = str(int(table["DedicatedFiber"].max()))
+    # TODO: add extra if fibre is a range
+        #   Traceback (most recent call last):
+        #     File "K:\Personal Files\Patrick Wilkie\Design + Engineering\Python\tables_to_ppc.py", line 58, in <module>
+        #       minF = str(int(table["DedicatedFiber"].min()))
+        #   ValueError: invalid literal for int() with base 10: '181-182'
+    try:
+        fx = table["DedicatedFiber"].split("-")[0]
+    except Exception as e:
+        print(e)
+        fx = table["DedicatedFiber"]
+    minF = str(int(fx.min()))
+    maxF = str(int(fx.max()))
     print("min", minF, " Max: ", maxF)
     table["FibreAllocation"] = str(minF+"-"+maxF)
     lio.append(table)
@@ -100,7 +110,15 @@ df.to_excel(opath+"PYTHON_PPC-step-1.xlsx", index=False)
 ####################################################
 
 ppc_path = askopenfilename(title="Select Output PPC.xlsx File for this FSA (Do NOT use the combined PPC)")
-ppc = pd.read_excel(ppc_path, sheet_name="OKRG", header=1) # sheet_name="PPC" | "OKRG"
+xl = pd.ExcelFile(ppc_path)
+
+for i, sheet in enumerate(xl.sheet_names):
+    print(i, ":", sheet)
+# print(xl.sheet_names)  # see all sheet names
+sheet_name = int(input("Select sheet with PPC data:"))
+sheet_name = xl.sheet_names[sheet_name]
+ppc = xl.parse(sheet_name, header=1)  # read a specific sheet to DataFrame
+# ppc = pd.read_excel(ppc_path, sheet_name="OKRG", header=1) # sheet_name="PPC" | "OKRG"
 
 # Filter out all DNE properties
 # ppc = ppc[ppc["DoesNotExist"]==False] ## TODO: Change this line -- it causes headache later in the process!
@@ -143,13 +161,17 @@ result.to_excel(opath+"PYTHON_PPC-step-2.xlsx", index=None)
 
 ## df["Structure"] or df["TerminalID"]
 splice_r_path = askopenfilename(title="Select Splice Annotation CSV from Rhino Export Step")
-splices = pd.read_csv(splice_r_path, header=0)
+splices = pd.read_csv(splice_r_path, header=0, index_col=False)
 # splices.columns = ["TerminalID", "TerminalLocation", "FSA", "FiberAllocation", "SheetNo"]
 
 splices["TerminalID"] = splices['TerminalID'].apply(lambda x: x.replace("#", ""))
 
-result = pd.merge(result, splices, how='left', left_on=['TerminalID_y'], right_on=['TerminalID']) # one_to_one
-result.to_excel(opath+"PYTHON_PPC_step-4_validate.xlsx", index=None)
+## Fixing for TerminalID_y contains NaNs
+rx = result['TerminalID_y'].replace(np.nan, 0).astype(int)  
+result = result.merge(splices, left_on=rx, right_on="TerminalID")
+
+result2 = pd.merge(result, splices, how='left', left_on=rx, right_on=['TerminalID']) # one_to_one
+result2.to_excel(opath+"PYTHON_PPC_step-4_validate.xlsx", index=None)
 
 # Set the Structure variable data
 # TODO:
