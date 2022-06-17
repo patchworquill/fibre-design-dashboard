@@ -1,5 +1,6 @@
 from DFD_Dash.allocation import *
 from DFD_Dash.upload import *
+
 import pandas as pd
 import pydot
 import networkx as nx
@@ -31,7 +32,7 @@ def sort_edges(edges_df):
     edges_df = edges_df.drop(splice_indices, axis=0)
     
     for i, sb in enumerate(splice_ends):
-        print(sb)
+        print("Sorting", sb)
         this = splices.loc[splice_indices[i]].tolist()
         index = edges_df[edges_df['Start SB']==sb]['Number'].tolist()[0]
         print("Start SB index:", index)
@@ -40,18 +41,10 @@ def sort_edges(edges_df):
         print("INDEX:", index, "\nITEM:", this)
 
     edges_df = edges_df.sort_index().reset_index(drop=True)
+    edges_df['Number'] = edges_df.index
     return edges_df
 
-sort_edges(edges_df)
-
-## Add FDH -> SV to EDGES
-# fdhEdges = edges_df[edges_df['Parent Path']=="FDH"]
-# splices = fdhEdges['Start SB'].unique().tolist()
-
-# for splice in splices:
-#     print("Adding splice", splice, "to Cable List")
-#     row = pd.DataFrame([["FDH", splice]], columns = ['Start SB', 'End SB'])
-#     edges_df = pd.concat([row, edges_df])
+edges_df = sort_edges(edges_df)
 
 def add_splices(edges_df):
     fdhEdges = edges_df[edges_df['Parent Path']=="FDH"]
@@ -61,48 +54,43 @@ def add_splices(edges_df):
         print("Adding splice", splice, "to Cable List")
         row = pd.DataFrame([["FDH", splice]], columns = ['Start SB', 'End SB'])
         edges_df = pd.concat([row, edges_df])
+    edges_df = edges_df.sort_index().reset_index(drop=True)
+    edges_df['Number'] = edges_df.index
 
     return edges_df
 
-def reindex(df):
-    cableID = []
-    for idx, data in enumerate(df[df.columns[0]]):
-        cableID.append(idx)
-
-    df['Index'] = cableID
-    df.set_index('Index')
-    return df
-
 edges_df = add_splices(edges_df)
-edges_df = reindex(edges_df)
-edges_df = edges_df.set_index('Index')
-
-
-
-# edges_df.drop('Number') # Remove 'Number' column, which has been replaced by 'index'
-
-# Reindex
-# cableID = []
-# for idx, endSB in enumerate(edges_df[edges_df.columns[0]]):
-#     cableID.append(idx)
-
-# edges_df['Number'] = cableID
-# edges_df.set_index('Number')
-
-
-
-# Sort Edges
-
-# Move SV to 
-
-## Add FDH -> SV to NODES
 
 # Sort nodes_df according to order of appearance in edges_df
+# First appearance of node adds it to list! Use append.
+def sort_nodes(nodes_df, edges_df):
+    nodes_dff = nodes_df.loc[0:1] # Add FDH
 
+    for i, node in  enumerate(edges_df['End SB'].tolist()):
+        if node in nodes_dff['Struc'].tolist():
+            print(node, 'already in sorted DataFrame.')
+            pass
+        else:
+            # print(node)
+            this = nodes_df[nodes_df['Struc']==node]
+            nodes_dff = pd.concat([nodes_dff, this])
 
+    nodes_df = nodes_dff.reset_index(drop=True)
+    nodes_df['Splice'] = nodes_df.index
 
+    return nodes_df
 
+nodes_df = sort_nodes(nodes_df, edges_df)
 
+## Save the pandas objects as csv
+nodes_df.to_csv(data_directory+"/nodes.csv", index=None)
+edges_df.to_csv(data_directory+"/edges.csv", index=None)
+
+## Create Graphviz object from dictionaries
+
+## For attribute in dictionaries, add
+
+## Use HTML Templates for each Structure Type
 
 
 
@@ -122,7 +110,6 @@ nx.draw(G, with_labels=True, font_weight='bold')
 plt.show()
 import pydot
 nx.nx_pydot.graphviz_layout(G, prog='dot')
-
 
 graphs = pydot.graph_from_dot_file('graphviz/fsa_1031B.dot')
 graph = graphs[0]
