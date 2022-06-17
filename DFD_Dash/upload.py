@@ -10,7 +10,7 @@ from dash import html
 from dash.dependencies import Input, Output
 import pandas as pd
 
-UPLOAD_DIRECTORY = "/project/app_uploaded_files"
+UPLOAD_DIRECTORY = "/Personal Files/Patrick Wilkie/dash-app/project/app_uploaded_files"
 
 if not os.path.exists(UPLOAD_DIRECTORY):
     os.makedirs(UPLOAD_DIRECTORY)

@@ -571,6 +571,26 @@ def update_data(files):
         return 0, 0
     return project, fsa
 
+# TODO: add callbacks on file-read from our CSV
+# project_name
+# fsa_name
+# tooltip-target
+#     len(NODES_LIST)
+#     str(NODES_LIST)
+# tooltip-target2
+#     str(nx.number_of_edges(G))
+#     str(nx.edges(G))
+# live-count
+#     str(nodes_df["Live"].sum()
+# spare-count
+#     str(nodes_df["SPARE"].sum()+nodes_df["SPARE2"].sum()+nodes_df["SPARE3"].sum())
+# reserve-count
+#     str(nodes_df["RSVD"].sum()+nodes_df["RSVD2"].sum())
+
+# tooltip-target3
+#     "MAX"+str(len(nx.degree_histogram(G))-1)
+#     str(nx.degree(G))
+
 def load_everything(file='Data\(Fibre Data) OKRG 1031B_.xlsx'):
     nodes_df, edges_df = load_file(file)
     G = create_graph(edges_df) # create_graph assumes schema is Number | Start | End | etc1 | etc2 | etc3 ...
