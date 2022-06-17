@@ -7,7 +7,13 @@ import networkx as nx
 from tkinter.filedialog import askdirectory, askopenfilename
 import os, time, shutil
 
-data_directory = askdirectory(title="Select Rhino Output directory:")
+try:
+    data_directory = askdirectory(title="Select Rhino Output directory:")
+except NameError, ModuleNotFoundError as e:
+    print(e)
+    data_directory = "/Users/patrickwilkie/Documents/Work/KadTec/DFD/Fiber Layout/1142A"
+
+os.path.exists(data_directory)
 dir_list = os.listdir(data_directory)
 for file in dir_list:
     if "Node" in file:
@@ -18,6 +24,26 @@ for file in dir_list:
 nodes_df = pd.read_csv(node_file)
 edges_df = pd.read_csv(edge_file)
 
+def sort_edges(edges_df):
+    splices = edges_df[edges_df['Parent Path']=="FDH"]
+    splice_ends = splices['End SB'].tolist()
+    splice_indices = splices.index.tolist()
+    edges_df = edges_df.drop(splice_indices, axis=0)
+    
+    for i, sb in enumerate(splice_ends):
+        print(sb)
+        this = splices.loc[splice_indices[i]].tolist()
+        index = edges_df[edges_df['Start SB']==sb]['Number'].tolist()[0]
+        print("Start SB index:", index)
+        index -= 0.5 # Insert BEFORE index matching Start SB
+        edges_df.loc[index] = this
+        print("INDEX:", index, "\nITEM:", this)
+
+    edges_df = edges_df.sort_index().reset_index(drop=True)
+    return edges_df
+
+sort_edges(edges_df)
+
 ## Add FDH -> SV to EDGES
 # fdhEdges = edges_df[edges_df['Parent Path']=="FDH"]
 # splices = fdhEdges['Start SB'].unique().tolist()
@@ -26,7 +52,6 @@ edges_df = pd.read_csv(edge_file)
 #     print("Adding splice", splice, "to Cable List")
 #     row = pd.DataFrame([["FDH", splice]], columns = ['Start SB', 'End SB'])
 #     edges_df = pd.concat([row, edges_df])
-
 
 def add_splices(edges_df):
     fdhEdges = edges_df[edges_df['Parent Path']=="FDH"]
@@ -38,7 +63,6 @@ def add_splices(edges_df):
         edges_df = pd.concat([row, edges_df])
 
     return edges_df
-
 
 def reindex(df):
     cableID = []
@@ -53,15 +77,7 @@ edges_df = add_splices(edges_df)
 edges_df = reindex(edges_df)
 edges_df = edges_df.set_index('Index')
 
-def sort_edges(edges_df):
-    splices = edges_df[edges_df['Parent Path']=="FDH"]
-    splice_ends = splices['End SB'].tolist()
-    for i, splice in enumerate(splice_ends):
-        # lookup End SB Index
-        edges_df['Start SB'==splice]
-        splices[i]
 
-sort_edges(edges_df)
 
 # edges_df.drop('Number') # Remove 'Number' column, which has been replaced by 'index'
 
