@@ -91,7 +91,7 @@ df.to_excel(opath+"1-df_clean.xlsx", index=False)
 ##
 ####################################################
 
-splice_r_path = askopenfilename(title="Select Splice Annotation CSV from Rhino Export Step")
+splice_r_path = askopenfilename(title="Select Terminal Annotation CSV from Rhino Export Step")
 splices = pd.read_csv(splice_r_path, header=0, index_col=False, on_bad_lines="skip")
 # splices_missing = pd.read_csv(splice_r_path, header=0, index_col=False, on_bad_lines='skip')
 
@@ -113,18 +113,15 @@ dfs.to_excel(opath+"2-df_splices.xlsx", index=False)
 ####################################################
 
 ## Optionally load the files
-df_path = "K:\Clients\AFL - AFL\\2022\\003 - HANY - PTMS - 2022\PTMS 3111A\DFD\\2nd Submission\Py-OUTPUT\\1-df_clean.csv"
-dfs_path = "K:\Clients\AFL - AFL\\2022\\003 - HANY - PTMS - 2022\PTMS 3111A\DFD\\2nd Submission\Py-OUTPUT\\2-df_splices.csv"
+# df_path = "K:\Clients\AFL - AFL\\2022\\003 - HANY - PTMS - 2022\PTMS 3111A\DFD\\Py-OUTPUT\\1-df_clean.csv"
+# dfs_path = "K:\Clients\AFL - AFL\\2022\\003 - HANY - PTMS - 2022\PTMS 3113A\DFD\\Py-OUTPUT\\2-df_splices.csv"
+# dfs_path = "K:\Clients\AFL - AFL\\2022\\003 - HANY - PTMS - 2022\PTMS 3113A\DFD\\Py-OUTPUT\\2-df_splices.xlsx"
 # ppc_path =  "K:\Clients\AFL - AFL\\2021\\022 - OGDN\OGDN 1144A\DFD\\(Premise Data - FMS Tracker) OGDN 1144A 2847101.xlsx"
-opath = "K:\Clients\AFL - AFL\\2022\\003 - HANY - PTMS - 2022\PTMS 3111A\DFD\\2nd Submission\Py-OUTPUT"
+# opath = "K:\Clients\AFL - AFL\\2022\\003 - HANY - PTMS - 2022\PTMS 3111A\DFD\\2nd Submission\Py-OUTPUT"
 
-df = pd.read_csv(df_path)
-dfs = pd.read_csv(dfs_path)
-
-
-
-
-
+# df = pd.read_csv(df_path)
+# dfs = pd.read_csv(dfs_path)
+# dfs = pd.read_excel(dfs_path)
 
 ppc_path = askopenfilename(title="Select Output PPC.xlsx File for this FSA (Do NOT use the combined PPC)")
 ppc = pd.read_excel(ppc_path, sheet_name=0, header=2) # TODO: if OKRG =1 if PTMS =2
@@ -209,3 +206,20 @@ for i in ppc.index.tolist():
         missing_addresses.append(address)
 
 ppc_copy.to_excel(opath+"/MERGE_TO_PPC.xlsx", index=None)
+
+####################################################
+## 
+##                  PART 4
+## 
+##      Add RESERVE Fibers from Rhino Output
+##          
+##
+####################################################
+
+splice_r_path = askopenfilename(title="Select RESERVE Annotation CSV from Rhino Export Step")
+reserves = pd.read_csv(splice_r_path, header=0, index_col=False, on_bad_lines="skip")
+# splices_missing = pd.read_csv(splice_r_path, header=0, index_col=False, on_bad_lines='skip')
+
+###### MERGING TEST THINGY
+ppc2 = pd.merge(ppc_copy, reserves, how="left", left_on="FullAddress", right_on="TerminalLocation")
+ppc2.to_excel(opath+"/MERGE_TO_PPC_res.xlsx", index=None)
